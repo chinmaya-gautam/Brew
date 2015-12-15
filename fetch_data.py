@@ -4,6 +4,7 @@ import mechanize
 import cookielib
 import re
 from bs4 import BeautifulSoup, Tag
+import os
 
 #sources
 '''This is a temporary list,
@@ -92,6 +93,8 @@ class source:
         self.imdb_base_url = "http://www.imdb.com"
         self.links = [] #temporarily store links from a site
         self.movies = []
+        if not os.path.exists("temp"):
+            os.makedirs("temp")
 
     def get_sources(self):
         self.imdb_top_250 = "http://www.imdb.com/chart/top"
@@ -99,7 +102,13 @@ class source:
     def get_html(self, url):
         result = self.browser.open(url)
         return result
-    
+    def get_image(self, url, name):
+        name = "_".join(name.split(" "))
+        filename = name + "." + url.split(".")[-1]
+        filename = "temp/" + filename
+        image = self.browser.retrieve(url,filename)
+        return filename
+
     def parse_imdb_top_250(self):
         result = self.get_html("http://www.imdb.com/chart/top")
         html = result.read()
@@ -131,9 +140,11 @@ class source:
             self.movies[-1].set_movie_imdb_rating(movie_rating)
 
             #content Rating
-            movie_content_rating =  self.soup.find('meta', itemprop='contentRating')['content']
+            try:
+                movie_content_rating =  self.soup.find('meta', itemprop='contentRating')['content']
+            except:
+                movie_content_rating = "N/A"
             self.movies[-1].set_movie_content_rating(movie_content_rating)
-            
             #running time
             running_time = "" +  self.soup.find('time', itemprop='duration').contents[0].string
             running_time = running_time.strip()
@@ -178,8 +189,9 @@ class source:
             self.movies[-1].set_movie_description(str)
             #print description
 
-            #poster link
-            poster =  self.soup.find('img', itemprop='image')['src']
+            #poster 
+            poster_url =  self.soup.find('img', itemprop='image')['src']
+            poster = self.get_image(poster_url,movie_name)
             self.movies[-1].set_movie_poster(poster)
 
             if output_mode:
@@ -194,6 +206,5 @@ class source:
 #print html
 
 #src = source()
-
 #src.parse_imdb_top_250()
-#movies = src.get_imdb_movie_details()
+#movies = src.get_imdb_movie_details(True)

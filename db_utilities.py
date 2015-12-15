@@ -75,19 +75,26 @@ class database_ :
         print "adding movie to databse"
         for movie in movies:
             print "adding 1 movie"
-            query = "insert into movies values('" + movie.mName + "', '" + movie.mRunningTime + "','" + movie.mContentRating + "','" + movie.mIMDBRating + "','" + movie.mDescription + "')";
-            print query
-            cur.execute(query)
-            query = "insert into directors values('" + movie.mDirector + "','" + movie.mName + "')"
-            cur.execute(query)
-            query = "insert into media (md_type, md_movie, md_content) values('" + "image" + "','" + movie.mName + "','" + movie.mPoster + "')"
-            cur.execute(query)
+            query = "insert into movies values(?, ?, ?, ?, ?)"
+            cur.execute(query, [movie.mName, movie.mRunningTime, movie.mContentRating, movie.mIMDBRating, movie.mDescription])
+            
+            query = "insert into directors values(?, ?)"
+            cur.execute(query, [movie.mDirector, movie.mName])
+            
+            #get image
+            image_file = open(movie.mPoster, 'rb')
+            image_binary = image_file.read()
+            query = "insert into media (md_type, md_movie, md_content) values(?, ?, ?)"
+            cur.execute(query, ["image", movie.mName, buffer(image_binary)])
+            
             for actor in movie.mActors:
-                query = "insert into actors values ('" + actor + "','" + movie.mName + "')"
-                cur.execute(query)
+                query = "insert into actors values (?, ?)"
+                cur.execute(query, [actor, movie.mName])
+
             for gen in movie.mGenre:
-                query = "insert into genre values ('" + gen + "','" + movie.mName + "')"
-                cur.execute(query)
+                query = "insert into genre values (?, ?)"
+                cur.execute(query, [gen, movie.mName])
+
         self.commit_changes()
         print "done adding movie"
 
