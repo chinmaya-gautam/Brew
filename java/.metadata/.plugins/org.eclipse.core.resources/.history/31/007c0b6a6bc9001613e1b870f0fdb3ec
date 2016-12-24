@@ -1,0 +1,9 @@
+
+public class Utilities {
+	public Utilities(){}
+
+	public String getActor(String actor1_text) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+}

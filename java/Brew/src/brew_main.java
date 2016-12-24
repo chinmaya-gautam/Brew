@@ -25,14 +25,23 @@ public class brew_main extends JFrame implements Runnable{
 	private JPanel bottom_panel;
 	private JPanel rating_panel;
 	private JPanel genre_panel;
+	private JPanel actor_panel;
 	private JPanel go_panel;
 	private JLabel rating_label;
+	private JLabel actor_label;
+	private JLabel comma_label;
 	private TextField rating_lower_bound_text;
 	private TextField rating_upper_bound_text;
+	private TextField actor_text1;
+	private TextField actor_text2;
+	private TextField director_text;
+	private TextField year_lower_bound_text;
+	private TextField year_upper_bound_text;
 	private JLabel to_label;
 	private JComboBox genre_combobox;
 	private JButton go_button;
 	private static Db_utilities dbu;
+	private static Utilities utils;
 	
 	public brew_main(){
 		try {
@@ -51,38 +60,74 @@ public class brew_main extends JFrame implements Runnable{
 		add(logo_panel, BorderLayout.NORTH);
 		
 		//filters setup
-		filters_panel = new JPanel(new GridLayout(3,1));
+		filters_panel = new JPanel(new GridLayout(4,1));
 		filters_panel.setBackground(Color.BLACK);
+		
 		to_label = new JLabel("to");
 		to_label.setForeground(Color.WHITE);
+		
 		rating_lower_bound_text = new TextField();
 		rating_lower_bound_text.setColumns(5);
 		rating_upper_bound_text = new TextField();
 		rating_upper_bound_text.setColumns(5);
 		rating_label = new JLabel("Rating");
-		
+		rating_label.setText("Rating in range: ");
+		rating_label.setForeground(Color.WHITE);
 		rating_panel = new JPanel();
 		rating_panel.setBackground(Color.BLACK);
+		rating_panel.add(rating_label);
+		rating_panel.add(rating_lower_bound_text);
+		rating_panel.add(to_label);
+		rating_panel.add(rating_upper_bound_text);
+		
 		genre_panel = new JPanel();
 		genre_panel.setBackground(Color.BLACK);
 		genre_combobox = new JComboBox();
 		genre_combobox.addItem("select genre");
-		genre_combobox.addItem("action");
+		genre_combobox.addItem("Action");
+		genre_combobox.addItem("Crime");
+		genre_combobox.addItem("Drama");
+		genre_combobox.addItem("Biography");
+		genre_combobox.addItem("History");
+		genre_combobox.addItem("Western");
+		genre_combobox.addItem("Adventure");
+		genre_combobox.addItem("Fantasy");
+		genre_combobox.addItem("Romance");
+		genre_combobox.addItem("Mystery");
+		genre_combobox.addItem("Sci-Fi");
+		genre_combobox.addItem("Thriller");
+		genre_combobox.addItem("Family");
+		genre_combobox.addItem("Comedy");
+		genre_combobox.addItem("Animation");
+																																					genre_combobox.addItem("Sport");
 		genre_panel.add(genre_combobox);
+		
+		actor_panel = new JPanel();
+		actor_panel.setBackground(Color.BLACK);
+		actor_label = new JLabel("Actors");
+		actor_label.setText("Actors: ");
+		actor_label.setForeground(Color.WHITE);
+		actor_text1 = new TextField();
+		actor_text1.setColumns(10);
+		actor_text2 = new TextField();
+		actor_text2.setColumns(10);
+		comma_label = new JLabel(",");
+		comma_label.setForeground(Color.WHITE);
+		actor_panel.add(actor_label);
+		actor_panel.add(actor_text1);
+		actor_panel.add(comma_label);
+		actor_panel.add(actor_text2);
+		
 		go_panel = new JPanel();
 		go_panel.setBackground(Color.BLACK);
 		go_button = new JButton();
 		go_button.setText("GO");
 		go_button.addActionListener(go_action);
-		rating_label.setText("Rating in range: ");
-		rating_label.setForeground(Color.WHITE);
-		rating_panel.add(rating_label);
-		rating_panel.add(rating_lower_bound_text);
-		rating_panel.add(to_label);
-		rating_panel.add(rating_upper_bound_text);
+		
 		go_panel.add(go_button);
 		filters_panel.add(rating_panel);
 		filters_panel.add(genre_panel);
+		filters_panel.add(actor_panel);
 		filters_panel.add(go_panel);
 		
 		filters_panel.setBorder(new EmptyBorder(20, 20, 10, 10));
@@ -113,14 +158,36 @@ public class brew_main extends JFrame implements Runnable{
 			// TODO Auto-generated method stub
 			String lower_rating_text =  rating_lower_bound_text.getText();
 			String upper_rating_text =  rating_upper_bound_text.getText();
+			String genre_text = genre_combobox.getSelectedItem().toString();
+			String actor1_text = actor_text1.getText();
+			String actor2_text = actor_text2.getText();
 			
+			if (lower_rating_text.isEmpty()){ lower_rating_text = "0.0";}
+			if (upper_rating_text.isEmpty()){ upper_rating_text = "10.0";}
+			if (genre_text.equals("select genre")){genre_text = "";}
+			
+			if(actor1_text.isEmpty() && actor2_text.isEmpty()){
+				actor1_text = ""; actor2_text="";
+			}else{
+				if(actor1_text.isEmpty()){
+					actor1_text = actor2_text;
+					actor2_text = "";
+				}else if (actor2_text.isEmpty()){
+					actor2_text = "";
+				}
+				ArrayList<String> anames = utils.getActor(actor1_text, actor2_text);
+				actor1_text = anames.get(0);
+				actor2_text = anames.get(1);
+			}
+			
+			if(actor2_text.isEmpty()){actor2_text = "";}
 			System.out.println("lower rating: " + lower_rating_text);
 			System.out.println("upper rating: " + upper_rating_text);
-			if (lower_rating_text.isEmpty()){ lower_rating_text = "0.0";}
-			if (upper_rating_text.isEmpty()){ upper_rating_text = "0.0";}
+			System.out.println("genre: " + genre_text);
+			System.out.println("actors: " + actor1_text + ", " + actor2_text);
 			float lower_rating = Float.parseFloat(lower_rating_text);
 			float upper_rating = Float.parseFloat(upper_rating_text);
-			Constraints constraints = new Constraints(lower_rating, upper_rating, "", "");
+			Constraints constraints = new Constraints(lower_rating, upper_rating, genre_text, actor1_text, actor2_text);
 			ArrayList<Movies> movies = get_results(constraints);
 			show_movies(movies);
 		}
@@ -144,7 +211,7 @@ public class brew_main extends JFrame implements Runnable{
 		center_panel.setLayout(new GridLayout(rows, cols));
 		int counter = -1;
 		for (Movies movie: movies){
-			System.out.println(movie.movieName);
+			//System.out.println(movie.movieName);
 			JButton imgButton = new JButton();
 			JPanel imgContainerPanel = new JPanel();
 			imgButton.setBorder(new EmptyBorder(50, 50, 50, 50));
@@ -172,7 +239,8 @@ public class brew_main extends JFrame implements Runnable{
 	}
 	public static void main(String[] args){
 		dbu = new Db_utilities();
-		dbu.test_db();
+		utils = new Utilities();
+		//dbu.test_db();
 		brew_main app = new brew_main();
 		app.setSize(1960,1024);
 		app.setDefaultCloseOperation(EXIT_ON_CLOSE);

@@ -1,0 +1,17 @@
+import java.util.ArrayList;
+import org.apache.commons.text.*;
+public class Utilities {
+	private static Db_utilities dbu;
+	public Utilities(){
+		dbu = new Db_utilities();
+	}
+
+	public ArrayList<String> getActor(String actor1_text, String actor2_text) {
+		ArrayList<String> actors = dbu.getAllActors();
+		ArrayList<String> result = new ArrayList<String>();
+		for (String actor:actors){
+			System.out.println(actor);
+		}
+		return result;
+	}
+}

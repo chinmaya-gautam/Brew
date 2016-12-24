@@ -1,0 +1,30 @@
+import java.util.ArrayList;
+import org.apache.commons.text.similarity.*;
+public class Utilities {
+	private static Db_utilities dbu;
+	private static JaroWinklerDistance distance;
+	public Utilities(){
+		dbu = new Db_utilities();
+		distance = new JaroWinklerDistance();
+	}
+
+	public ArrayList<String> getActor(String actor1_text, String actor2_text) {
+		ArrayList<String> actors = dbu.getAllActors();
+		ArrayList<String> result = new ArrayList<String>();
+		String actor1 = "";
+		String actor2 = "";
+		for (String actor:actors){
+			Double d = distance.apply(actor, actor1_text);
+			if (d > 0.9){
+				actor1 = actor;
+			}
+			d = distance.apply(actor, actor2_text);
+			if (d > 0.9){
+				actor2 = actor;
+			}
+			System.out.println(actor+ " " + actor1_text + " " + d.toString());
+			distance.apply(actor, actor1_text);
+		}
+		return result;
+	}
+}

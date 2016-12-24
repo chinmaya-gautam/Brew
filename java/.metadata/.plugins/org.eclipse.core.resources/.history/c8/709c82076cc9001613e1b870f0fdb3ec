@@ -1,0 +1,12 @@
+
+public class Utilities {
+	private static Db_utilities dbu;
+	public Utilities(){
+		
+	}
+
+	public String getActor(String actor1_text) {
+		ArrayList<String> actors = dbu.getAllActors();
+		return null;
+	}
+}

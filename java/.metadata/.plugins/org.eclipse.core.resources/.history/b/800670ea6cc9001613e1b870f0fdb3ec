@@ -1,0 +1,16 @@
+import java.util.ArrayList;
+
+public class Utilities {
+	private static Db_utilities dbu;
+	public Utilities(){
+		dbu = new Db_utilities();
+	}
+
+	public String getActor(String actor1_text) {
+		ArrayList<String> actors = dbu.getAllActors();
+		for (String actor:actors){
+			System.out.println(actor);
+		}
+		return "";
+	}
+}

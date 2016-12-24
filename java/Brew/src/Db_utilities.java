@@ -55,13 +55,23 @@ public class Db_utilities {
 	
 	public ArrayList getResult(Constraints constraints){
 		ArrayList<Movies> movieList = new ArrayList();
-		
-		String query = "select * from movies, media where movies.m_name = media.md_movie and ";
-		if (constraints.upper_rating == 0.0 && constraints.lower_rating > 0.0){
-			query = query + "m_imdbRating >= " + constraints.lower_rating;
-		} else if (constraints.upper_rating > 0.0){
-			query = query + "m_imdbRating between " + constraints.lower_rating + " and "  + constraints.upper_rating;
+		String tables = "movies, media ";
+		String conditions = "where movies.m_name = media.md_movie and ";
+		if (constraints.genre != ""){
+			tables +=", genre "; 
+			conditions += " movies.m_name = genre.g_movie and genre.g_type='"+constraints.genre +"' and ";
 		}
+		if (constraints.actor1 != ""){
+			tables += ", actors ";
+			conditions += " movies.m_name = actors.a_movie and ";
+		}
+		
+		String query = "select distinct * from ";
+		query += tables;
+		query += conditions;
+		query = query + "m_imdbRating between " + constraints.lower_rating + " and "  + constraints.upper_rating;
+		System.out.println(query);
+		
 		try {
 			stmt = conn.createStatement();
 			ResultSet rs = stmt.executeQuery(query);
@@ -72,8 +82,8 @@ public class Db_utilities {
 				Image img = ImageIO.read(new ByteArrayInputStream(poster_raw));
 				String movie_name = rs.getString(1);
 				String movie_rating = rs.getString(4);
-				System.out.println("Movie: " + movie_name);
-				System.out.println("Rating: " + movie_rating);
+				//System.out.println("Movie: " + movie_name);
+				//System.out.println("Rating: " + movie_rating);
 				tempMovie.movieName = movie_name;
 				tempMovie.rating = Float.parseFloat(movie_rating);
 				tempMovie.poster = img;
@@ -83,10 +93,25 @@ public class Db_utilities {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-	
-		System.out.println(query);
-		
+
 		
 		return movieList;
+	}
+
+	public ArrayList<String> getAllActors() {
+		String query = "select distinct a_name from actors";
+		ArrayList<String> actors = new ArrayList<String>();
+		try {
+			stmt = conn.createStatement();
+			ResultSet rs = stmt.executeQuery(query);
+			while(rs.next()){
+				actors.add(rs.getString(1));
+			}
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return actors;
+		
 	}
 }
